@@ -14,23 +14,89 @@ library(GGally)
 library(broom)
 library(kableExtra)
 library(modelsummary)
+library(stargazer)
 ```
 
+## Intro to ggpairs
+
+use GGally::ggpairs() to create a pairs plot
+
+```{r}
+ggpairs(penguins)
+```
+
+```{r}
+penguins %>% 
+  select(species, bill_length_mm:body_mass_g) %>% 
+  ggpairs(aes(color = species))
+
+ggplot(penguins, aes(x = bill_depth_mm, y = body_mass_g, group = species)) +
+  geom_point(aes(color = species)) +
+  geom_smooth(method = "lm")
+```
+
+## Multiple Linear Regression - Penguins
+
+use mult. linear regression to understand relationship between multiple predictor variables and a single outcome var. (body mass)
+
+```{r}
+penguin_lm <- lm(body_mass_g ~ flipper_length_mm + bill_depth_mm, data = penguins)
+
+penguin_lm
+```
+
+Interpreting penguins_lm coefficient for flipper_length_mm --> expect on average a 51.54 g increase in body mass for every 1 mm increase in flipper length.
+
+### use 'broom' tidy and glance
+- broom::tidy to get the coefficient summary
+- broom::glance to get the model summary in df
+
+```{r}
+penguin_lm_tidy <- tidy(penguin_lm)
+penguin_lm_tidy
+```
+
+in line code to refer to bill depth coefficient --> `r penguin_lm_tidy$statistic[3]`
+
+```{r}
+penguin_lm_glance <- glance(penguin_lm)
+penguin_lm_glance
+```
+
+## Try another model
+
+Body mass dependendent on
+- flipper length
+- species
+- sex
+
+```{r}
+penguin_lm_2 <- lm(body_mass_g ~ flipper_length_mm + species + sex, data = penguins)
+
+penguin_lm_2
+```
+
+## Use plot() to look at model diagnostics
+
+```{r}
+plot(penguin_lm_2)
+```
+
+--> penguin species, sex and flipper length are reasonable predictor variables. 
+--> Diagnostic plots all check out for normality of residuals, homoscedasticity, and no worrisome outliers
 
 
+## Make output tables
 
+### 1. Using Model Summary
+```{r}
+modelsummary(penguin_lm_2)
+```
 
-
-
-
-
-
-
-
-
-
-
-
+### 2. Using Stargazer
+```{r, results = "asis"}
+stargazer(penguin_lm_2, type = "html")
+```
 
 
 
